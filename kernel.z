@@ -1,0 +1,357 @@
+#!/zcompile/.zwc
+
+$ZDOTDIR/.zshenv
+$ZDOTDIR/.zprofile
+$ZDOTDIR/.zshrc
+$ZDOTDIR/.zlogin
+$ZDOTDIR/.zlogout
+
+${TMPPREFIX}*		# (default is /tmp/zsh/*)
+/etc/zshenv
+/etc/zprofile
+/etc/zhrc
+/etc/zlogin
+/etc/zlogout		# (installation specific /etc is the default)
+
+
+# pipelines
+# used with '|' connects the actual command with the input of the next
+# '|&' is shorthand for '2>&1 |' connects bothe the 'stderr' and the 'stdout'
+# to the stdin of the next command.
+
+# the value of a pipe is the value of the last command
+# but if the first command is prepended with '!'
+# the value of the pipeline is the logical inverse value of the last command
+
+
+# 'coproc' prepended on a pipeline executes the pipeline as a coprocess
+
+# the shell can read from a 'coproc' with the symbol '>&p' the following way:
+# shell#: <&p coproc afconvert -f | www.fool.com >  www.fool.com_log.ftp
+
+
+# the shell can read from a 'coproc' with the symbol '>&p' the following way:
+# shell#: >&p coproc afconvert -f | www.fool.com >  www.fool.com_log.ftp
+
+
+# the shell can read functions with 'read -p'
+# the shell can write functions with 'print -p'
+
+# example of multiple pipelines:
+# dmesg | grep panic && print yes
+# print yes will only execute if grep panic throws out '0' which means zero errors
+# like turned on, at state shutdown
+
+
+# implementación de UDP
+
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+
+
+int
+socket(AF_INET, SOCK_DGRAM, 0)
+
+set noglob
+
+
+nocorrect command addresses(enp0s5) | exec -a
+{
+
+nocorrect command IPv4(/.dhcp) | exec -a
+
+	{
+		address: 10.211.55.7/24
+		family: 2
+		scope: global
+		source: dhcp
+	};	
+
+
+nocorrect command IPv6(static) | exec -a
+	{
+		address: fe80::21c:42ff:fea9:e528/64
+		family: 10
+		scope: link
+		source: static
+	};
+
+nocorrect command IPv6(DHCP) | exec -a
+	{
+		address: fdb2:2c26:f4e4:0:21c:42ff:fea9:e528/64
+		family: 10
+		scope: global
+		source: dhcp
+	};
+
+}
+
+
+nocorrect command bond()  | exec -a
+{
+	is_master: false
+	is_slave: false
+	lacp_rate: null
+	master: null
+	mode: null
+	slaves: []
+	xmit_hash_policy: null
+};
+
+
+nocorrect command bridge() | exec -a
+{
+	interfaces: []
+	is_bridge: false
+	is_port: false
+	options: {}
+};
+
+
+nocorrect command netlink_data() | exec -a
+{
+	arptype: 1
+	family: 0
+	flags: 69699
+	ifindex: 2
+	is_vlan: false
+	name: enp0s5
+};
+
+
+nocorrect command type=eth | exec -a
+
+nocorrect command udev_data() | exec -a
+{
+	[
+		DEVPATH: /device/pci0000:00/0000:00:05.0/virtio0/net/nep0s5
+		ID_BUS: pci
+        	ID_MM_CANDIDATE: '1'
+        	ID_MODEL_FROM_DATABASE: Virtio network device
+        	ID_MODEL_ID: '0x1000'
+        	ID_NET_NAME_MAC: enx001c42a9e528
+        	ID_NET_NAME_PATH: enp0s5
+        	ID_OUI_FROM_DATABASE: Parallels, Inc.
+        	ID_PATH: pci-0000:00:05.0
+        	ID_PATH_TAG: pci-0000_00_05_0
+        	ID_PCI_CLASS_FROM_DATABASE: Network controller
+        	ID_PCI_SUBCLASS_FROM_DATABASE: Ethernet controller
+        	ID_VENDOR_FROM_DATABASE: Red Hat, Inc.
+        	ID_VENDOR_ID: '0x1af4'
+        	IFINDEX: '2'
+        	INTERFACE: enp0s5
+        	SUBSYSTEM: net
+        	SYSTEM_ALIAS /sys/subsystem/net/devices/enp0s5
+        	TAGS: ':systemd:'
+        	USEC_INITIALIZED: '2708719'
+	];
+
+command attrs() | exec -a
+        {       
+                addr_assign_type: '0'
+                addr_len: '6'
+                address: 00:1c:42:a9:e5:28
+                broadcast: ff:ff:ff:ff:ff:ff
+                carrier: '1'
+                carrier_changes: '2'
+                carrier_down_count: '1'
+                carrier_up_count: '1'
+                dev_id: '0x0'
+                dev_port: '0'
+                device: null
+                dormant: '0'
+                duplex: unknown
+                flags: '0x1003'
+                gro_flush_timeout: '0'
+                ifalias: ''
+                ifindex: '2'
+                iflink: '2'
+                link_mode: '0'
+                mtu: '1500'
+                name_assign_type: '4'
+                netdev_group: '0'
+                operstate: up
+                phys_port_id: null
+                phys_port_name: null
+                phys_switch_id: null
+                proto_down: '0'
+                speed: '-1'
+                subsystem: net
+                tx_queue_len: '1000'
+                type: '1'
+                uevent: ?INTERFACE=enp0s5 IFINDEX=2'
+        };
+}
+
+
+#################################################################
+#
+#			big warning ahead!!
+#
+#	ERRORS:
+#
+# ERRORS TRIGGER OFF THE KERNEL	
+# THEY KILL ALL THE PROCESSES
+# WHILE AT REALTIME STATUS
+# CONNECTION ERRORS USE NO SIGTRAPS
+# INSTEAD THEY ARE NEW DESIGNS OF SIGNAL DATA TYPES (closed source data types)
+# THERE IS NO AVAILABLE DOCUMENTATION FOR THIS ERROR HANDLING
+# APPROACH, EVEN SO YOU SHOULD REMEMBER THAT
+# THE APPROACH OF TURNING OFF A SYSTEM BY CHANGING KERNEL STATUS TO OFF
+# MIGHT OR MIGHT NOT DESTROY PARTS OF THE OPERATING SYSTEM REQUESTING ACCESS
+# IT MIGHT VARY FROM VENDOR TO VENDOR AND THE CONSEQUENCES
+# ARE NOT EXPLORED BECAUSE THIS APPROACH IS NOT A STANDARD APPROACH
+# INSTEAD IS PURE CUSTOM CODE IN Z
+#
+# THE FOCUS HERE FOR ERROR HANDLING
+# IS TO SIGKILL THE COPROCESS COMMAND
+# WHEN IT ATTEMPTS TO CREATE A SOCKET WHERE THERE IS NONE AVAILABLE
+# WHEN ATTEMPTS TO CREATE AN ADDRESS WHEN THERE IS NO INTERFACE
+# WHEN IT SUGGESTS A CONNECTION WHEN THERE IS NO SUBNET MASK
+# ALLOCATION ROOM FOR THEM
+# AND ALL THE ERRORS THAT ARISE NOT REPORTED BY INTRUSION DETECTION
+#
+# THIS MIGHT HAPPEN IN A BANK, OR IN A HOSPITAL OR IN A GIANT PLACE
+# WHERE YOU NEED TO INTERACT WITH EVERY USER TO UNDERSTAND IF THEY ARE
+# INTRUDERS OR LEGITIMATE USERS
+#
+# AND SO WE CAN SAY THIS ERROR HANDLING METHOD STATES A WARNING
+# ON EVERY LOGIN SHELL WHEN UNRECOGNIZED LOGINS ATTEMPT TO REQUEST
+# SERVICES THE SYSTEM MIGHT USE, OF COURSE THE SYSTEM MIGHT NOT
+# BUT IT TRIGGERS BECAUSE OF SUCH A REQUEST RATHER QUICKLY
+#
+# IT'S A CLOSED SOURCE APPROACH (open source programmers please don't hate me)
+# AND I'M NOT GONNA MAKE FREE THE SOURCE CODE OF THIS PROGRAM (infinite)
+# 
+# REGARDLESS: 
+#
+# YOU CAN DOWNLOAD THIS PROGRAM
+# YOU CAN IMPLEMENT IT IN YOUR PROJECTS
+# YOU CAN SHARE IT
+# YOU CAN SELL IT
+# YOU CAN MODIFY IT
+# YOU CAN ADD IT TO YOUR DISTRIBUTED ARCHITECTURES AND DEPLOY IT THROUGH YOUR CLIENTS BASE
+# YOU MIGHT TRY TO REVERSE IT (IF YOU WANT TO TEST)
+#
+# IF SOMEONE ATTEMPTS TO DESTROY IT:
+#
+# THERE IS NO ANSWER FROM THE SYSTEM 
+#
+# (you don't get notified if you do that, which triggers autoupgrade)
+#
+# IN OTHER WORDS THE SYSTEM MIGHT NOT UNDERSTAND HOW TO DESTROY IT
+# BECAUSE OF THE CLOSED SOURCE SOFTWARE APPROACH
+#
+# YOU MIGHT ARGUE YOU AND YOU'D BE RIGHT
+# THAT THERE IS NO SIGNAL TO KILL THIS PROCESS IF ANY ERRORS OCCUR INSIDE THE PROGRAM
+# I DON'T CARE I TRUST MY SKILLS AS A PROGRAMMER AND MY PROGRAMS NEVER FAIL INSIDE OUT
+# BELIEVE ME I DESIGN GOOD SOFTWARE THE RIGHT WAY
+#
+# 
+# I'M FINE WITH THAT CLOSED APPROACH
+#
+# YOU: 
+#
+# I DON'T NEED CREDIT
+# I DON'T NEED PAYMENT
+# I CLAIM NO PROPERTY OF MY OWN SOFTWARE
+# AND DO ANYTING YOU NEED WITH THIS
+#
+# I FULLY EXPRESS HERE MY PERMISSION FOR YOU TO DO SO
+# 
+# "the network is vast and also infinite" 
+#
+#################################################################
+
+#####################
+# Diagnostic Errors
+#####################
+
+
+
+if $addresses * 1 | * 2 = on
+then $addresses(udp)
+{
+
+# EISCONN: request to establish a connection on a busy socket
+# (i.e the user specifies an address but it's socket is already connected)
+
+	EISCONN(&!)
+
+{
+	for     {
+			address: 10.211.55.7/24
+                	family: 2
+                	scope: global
+                	source: dhcp
+		};
+
+		[ in socket($IPv4)
+
+			{
+				AF_INET, SOCK_STREAM, IPPROTO_TCP &!
+				AF_INET6, SOCK_STREAM, IPPROTO_TCP &!	
+			} 
+
+	struct sockaddr_in 	{
+					u_int8_t		sin_len &!	
+					u_int8_t		sin_family &!
+					u_int16_t		sin_port &!
+					struct in_addr		sin_addr &!
+ 					int8_t			sin_zero[8] &!
+				};
+	
+
+	struct sockaddr_in6 	{
+					u_int8_t		sin6_len &!
+					u_int8_t		sin6_family &!
+					u_int16_t		sin6_port &!		
+					u_int32_t		sin6_flowinfo &!
+					struct in6_addr		sin6_addr &1
+					u_int32_t		sin6_scope_id &!
+				};
+
+}
+
+
+# ENOTCONN: request to send a datagram with no destination and it's socket has not been granted a connecion
+
+	ENOTCONN &!
+
+# ENOBUFS: request to handle a data structure and the system recognizes it run out of memory
+# (i.e it won't work busy under stressed circumstances, because it rises temperature of the fan system)
+
+	ENOBUFS &!
+
+# EADDRINUSE: request to create a socket, when it's port has already been allocated in memory
+# (favorite excuses are: can you duplicate my friend's socket for me to use it?)
+# (can i use my boss's socket?, im highly respected)
+# (can i have fun with my friends?)
+
+# warning! allocating more than one socket per port melts the memory card
+
+	EADDRINUSE &!
+
+# request to create a network address when for which no interface exists 
+	EADDRNOTAVAIL &!
+}
+
+[ elif exec [-cl] [-a enp0s5[0] | coproc nocorrect $addresses == 
+	{
+		$IPv4(noglob)
+		$IPv6(noglob)
+		$bond(noglob)
+		$bridge(noglob)
+		$netlink_data(noglob)
+		$type=eth(noglob)
+		$udev_data(noglob)
+	};
+]
+
+then $addresses * kernel.z=0
+
+else $addresses = -1 & kernel.z >&p kernel = off
+
+
